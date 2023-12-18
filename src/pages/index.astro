@@ -1,5 +1,5 @@
 ---
-import Counter from "../components/Counter.tsx";
+const res = await (await fetch("http://localhost:3000/tables")).json();
+console.log(res);
 ---
-<h1>Peneeeeeeeeeeeeee</h1>
-<Counter client:load/>
+<h1>THP Client</h1>
