@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model catCLIENTES {
+  idCliente  String  @id @unique
+  Nombre     String
+  Contacto   String?
+  DomCalle   String?
+  DomNumExt  Int?
+  DomNumInt  String?
+  DomColonia String?
+  DomCp      Int?
+  DomCiudad  String?
+  DomEstado  String?
+  Tel01      Int?
+  Rfc        String?
+  Tel02      String?
+  Cel        Int?
+  idTCliente String?
+  Descuento  Int?
+  Plazo      Int?
+}
+
+enum tCuenta {
+  INGRESO
+  EGRESO
+}
+
+model catCDC {
+  idCuenta   String  @id @unique
+  NumCatCont String
+  Cuenta     String
+  idTCuenta  tCuenta
+  inPPTO     Boolean
+  inCCH      Boolean
+}
+
+model catCM {
+  idComision     String   @id @unique
+  Comision       String
+  idPatronal     Int
+  idTrabajadores Int
+  Fecha          DateTime
+  Vigencia       Int
+}

@@ -1,8 +1,8 @@
-import { Client } from "pg";
+import { PrismaClient } from "@prisma/client";
 
 type QueryData = {
   ok: true,
-  rows: Record<any, any>[]
+  rows: Record<string, any>[]
 };
 
 type QueryError = {
@@ -13,16 +13,11 @@ type QueryError = {
 type QueryResult = QueryData | QueryError;
 
 class Connection {
-  private client = new Client({
-    user: 'pepe',
-    host: '',
-    password: '',
-    database: 'thp_db',
-  });
+  private prisma = new PrismaClient();
 
   async connect() {
     try {
-      await this.client.connect();
+      await this.prisma.$connect();
       console.log("==> [SERVER]: Connection made successfully to the db!");
     } catch (err) {
       console.error(`==> [SERVER]: ${err}`);
@@ -31,11 +26,11 @@ class Connection {
 
   async show_tables(): Promise<QueryResult> {
     try {
-      const res = await this.client.query("SELECT pg_tables.tablename FROM pg_catalog.pg_tables WHERE schemaname != 'information_schema' AND schemaname != 'pg_catalog'");
+      const res: Record<string, any>[] = await this.prisma.$queryRaw`SELECT pg_tables.tablename FROM pg_catalog.pg_tables WHERE schemaname != 'information_schema' AND schemaname != 'pg_catalog'`;
 
       return {
         ok: true,
-        rows: res.rows
+        rows: res
       }
     } catch (err) {
       console.error(`==> [SERVER]: ${err}`)
