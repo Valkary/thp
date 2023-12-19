@@ -41,6 +41,17 @@ class Connection {
     }
   }
 
+  async download_catESTACIONES() {
+    console.log("Attempting to write file")
+    try {
+      const request = await (await fetch("https://docs.google.com/spreadsheets/d/1f1l2OFLYFqWNcy084IiATyquMH7v2nnRx3lKfE8QAH0/gviz/tq?tqx=out:csv&sheet=catESTACIONES")).blob();
+      await Bun.write("./server/files/catESTACIONES.csv", request);
+      console.info("successfully wrote file to /server/files/catESTACIONES.csv");
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   async make_backup_file() {
     // TODO: MAKE A BACKUP FILE OF THE ENTIRE POSTGRES DATABASE
   }
@@ -57,3 +68,4 @@ class Connection {
 }
 
 export const db_connection = new Connection();
+await db_connection.download_catESTACIONES();
