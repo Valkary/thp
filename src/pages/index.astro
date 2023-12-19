@@ -1,5 +1,8 @@
 ---
 const res = await (await fetch("http://localhost:3000/tables")).json();
 console.log(res);
+
+import Counter from "../components/Counter";
 ---
 <h1>THP Client</h1>
+<Counter client:load />
