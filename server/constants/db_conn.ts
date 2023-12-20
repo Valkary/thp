@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { exec } from "node:child_process";
 
 type QueryData = {
   ok: true,
@@ -41,31 +42,35 @@ class Connection {
     }
   }
 
-  async download_catESTACIONES() {
-    console.log("Attempting to write file")
-    try {
-      const request = await (await fetch("https://docs.google.com/spreadsheets/d/1f1l2OFLYFqWNcy084IiATyquMH7v2nnRx3lKfE8QAH0/gviz/tq?tqx=out:csv&sheet=catESTACIONES")).blob();
-      await Bun.write("./server/files/catESTACIONES.csv", request);
-      console.info("successfully wrote file to /server/files/catESTACIONES.csv");
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async make_backup_file() {
-    // TODO: MAKE A BACKUP FILE OF THE ENTIRE POSTGRES DATABASE
-  }
-
   async migrate_db_from_sheets() {
-    // TODO: MIGRATE THE GOOGLE SHEETS DATABASE INTO A POSTGRES DATABASE
-    // [1] Download the CSV files for all tables in the google sheets database
-    // [2] Run create/truncate statements for all tables in the postgres database
-    // [3] Run insert statements on every row coming from the csv files into it's corresponding table
-    // [4] Log the rows per table inserted, date and migration file with timestamp backup
-    // WARN: THIS IS AN UNSAFE FUNCTION
-    // It deletes all the previous data in the database to produce a completely new version, do not run without backup
+    console.log("==> [SERVER]: Starting migration...");
+    const suffix = "/gviz/tq?tqx=out:csv&sheet=";
+
+    const sheet_urls = {
+      catCLIENTES: "https://docs.google.com/spreadsheets/d/1f1l2OFLYFqWNcy084IiATyquMH7v2nnRx3lKfE8QAH0",
+      catCDC: "https://docs.google.com/spreadsheets/d/1f1l2OFLYFqWNcy084IiATyquMH7v2nnRx3lKfE8QAH0"
+    }
+
+    for (const [sheet, url] of Object.entries(sheet_urls)) {
+      try {
+        const blob = await (await fetch(`${url}${suffix}${sheet}`)).blob();
+        await Bun.write(`./server/files/${sheet}.csv`, blob);
+
+        const csv_path = Bun.resolveSync(`../files/${sheet}.csv`, Bun.main);
+        const prompt = `\\copy "${sheet}" FROM '${csv_path}' DELIMITER ',' CSV HEADER;`;
+        const { stdout, stderr } = Bun.spawn(["psql", "thp_db", "-c", prompt]);
+
+        const out = await new Response(stdout).text();
+        const err = await new Response(stderr).text();
+
+        console.log("STDOUT:", out, ", STDERR:", err);
+      } catch (err) {
+        console.error(`==> [SERVER]: Error while creating ${sheet} table`);
+      }
+    }
+    console.log("==> [SERVER]: Migration finished!");
   }
 }
 
 export const db_connection = new Connection();
-await db_connection.download_catESTACIONES();
+await db_connection.migrate_db_from_sheets();

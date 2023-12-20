@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "catCLIENTES" ALTER COLUMN "DomNumExt" SET DEFAULT 0;

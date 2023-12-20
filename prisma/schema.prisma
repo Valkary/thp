@@ -15,7 +15,7 @@ model catCLIENTES {
   Nombre     String
   Contacto   String?
   DomCalle   String?
-  DomNumExt  Int?
+  DomNumExt  Int?    @default(0)
   DomNumInt  String?
   DomColonia String?
   DomCp      Int?
@@ -51,4 +51,10 @@ model catCM {
   idTrabajadores Int
   Fecha          DateTime
   Vigencia       Int
+}
+
+model catESTACIONES {
+  id         String @id @default(uuid())
+  idEstacion Int
+  nombre     String
 }
